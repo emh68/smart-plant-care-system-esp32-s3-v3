@@ -8,8 +8,8 @@ class TempHumSensor
 private:
     SHT35 _sht35;
     // Caching temp + hum for efficiency
-    float _currentTemp;
-    float _currentHum;
+    float _currentTemp; // Stored in Fahrenheit
+    float _currentHum;  // Stored in % Relative Humidity
 
 public:
     TempHumSensor(int pinNum);
