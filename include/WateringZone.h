@@ -19,7 +19,7 @@ private:
     Preferences _prefs; // Each plant gets its own memory for calibration values
 
 public:
-    // Pairs sensor wiht pump for a specific plant
+    // Pairs sensor with pump for a specific plant
     WateringZone(uint8_t sensorPin, uint8_t pumpPin, uint8_t id, String name);
 
     void begin();                             // Load saved values from memory
@@ -30,8 +30,8 @@ public:
     void update();
     int getMoisturePercent();     // Logic for 0-100% mapping
     void setPumpSpeed(int speed); // 0-255 PWM for MOSFET control
-
-    String getName() { return _plantName; }
+    void rename(String newName);
+    uint8_t getId() { return _id; }
 };
 
 #endif

@@ -1,11 +1,11 @@
 #include "WateringZone.h"
 
-// Initialize basic hardware pins and names
+// Initialize hardware pins and names
 WateringZone::WateringZone(uint8_t sensorPin, uint8_t pumpPin, uint8_t id, String name)
     : _sensorPin(sensorPin), _pumpPin(pumpPin), _id(id), _plantName(name)
 {
-    _dryValue = 520;   // Default 0% calibration
-    _waterValue = 260; // Default 100% calibration
+    _dryValue = 700;   // Default 0% calibration
+    _waterValue = 330; // Default 100% calibration
     _currentRaw = 0;
 }
 
@@ -15,12 +15,13 @@ void WateringZone::begin()
     analogReadResolution(10);
 
     // Open unique storage folder based on ID
-    String namespaceName = "zone" + String(_id);
-    _prefs.begin(namespaceName.c_str(), false);
+    String folder = "zone" + String(_id);
+    _prefs.begin(folder.c_str(), false);
 
     // Load saved calibration or use defaults
-    _dryValue = _prefs.getInt("dry", 520);
-    _waterValue = _prefs.getInt("water", 260);
+    _plantName = _prefs.getString("name", "Plant " + String(_id + 1));
+    _dryValue = _prefs.getInt("dry", 700);
+    _waterValue = _prefs.getInt("water", 330);
     _prefs.end();
 
     pinMode(_sensorPin, INPUT);
@@ -34,7 +35,7 @@ void WateringZone::update()
 
 int WateringZone::getMoisturePercent()
 {
-    // Map inverted values: High (520) to 0%, Low (260) to 100%
+    // Map inverted values: High (700) is air/dry 0%, Low (330) is submerged in water 100%
     int moisturePercent = map(_currentRaw, _dryValue, _waterValue, 0, 100);
     return constrain(moisturePercent, 0, 100);
 }
@@ -55,4 +56,13 @@ void WateringZone::setPumpSpeed(int speed)
 {
     // 0-255 PWM for motor speed control
     analogWrite(_pumpPin, speed);
+}
+
+void WateringZone::rename(String newName)
+{
+    _plantName = newName;
+    String folder = "zone" + String(_id);
+    _prefs.begin(folder.c_str(), false);
+    _prefs.putString("name", _plantName);
+    _prefs.end();
 }
