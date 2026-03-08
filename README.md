@@ -30,87 +30,6 @@ The system monitors 10-channel spectral light, soil moisture, and environmental 
 * **Actuators:** Seeed Grove MOSFET & DC Water Pump.
 * **Display/Input:** SSD1315 OLED (128x64), M5Stack Unit Encoder.
 
-<!-- # Environment Setup & Installation
-## 🛠️ Environment Setup & Installation
-
-To get this project running on your **Seeed Studio XIAO ESP32-S3**, we use **PlatformIO**. Follow these steps to set up your environment and compile the code.
-
-### Step 1: Install the Tools
-1. **Visual Studio Code (VS Code):** Download and install it from [code.visualstudio.com](https://code.visualstudio.com/).
-2. **PlatformIO Extension:** * Open VS Code.
-   * Click the **Extensions** icon on the left sidebar (or press `Ctrl+Shift+X`).
-   * Search for **"PlatformIO IDE"** and click **Install**.
-
-
-
-### Step 2: Project Configuration
-This project relies on a specific `platformio.ini` file to manage hardware settings and automatically download the required libraries.
-
-1. Open your project folder in VS Code.
-2. Ensure there is a file named `platformio.ini` in the root directory.
-3. Paste the following configuration into that file:
-
-```ini
-; Please visit documentation for the other options and examples
-; https://docs.platformio.org/page/projectconf.html
-
-; PlatformIO Configuration File for Xiao ESP32-S3
-; ------------------------------------------------
-[env:seeed_xiao_esp32s3]
-platform = espressif32
-board = seeed_xiao_esp32s3
-framework = arduino
-monitor_speed = 115200
-
-build_flags = 
-    -D ARDUINO_USB_MODE=1
-    -D ARDUINO_USB_CDC_ON_BOOT=1
-
-lib_deps = 
-    [https://github.com/Seeed-Studio/Grove_High_Precision_RTC_PCF85063TP.git](https://github.com/Seeed-Studio/Grove_High_Precision_RTC_PCF85063TP.git)
-    [https://github.com/Seeed-Studio/Seeed_SHT35.git](https://github.com/Seeed-Studio/Seeed_SHT35.git)
-    olikraus/U8g2 @ ^2.35.9
-    arduino-libraries/NTPClient @ ^3.2.1
-    adafruit/Adafruit AS7341 @ ^1.4.1
-    adafruit/Adafruit BusIO @ ^1.16.1
-```
-Step 3: Hardware Wiring & Secrets
-Before uploading, ensure your hardware is connected correctly and your credentials are set:
-
-Hardware Wiring:
-
-I2C Devices: Connect all I2C devices (OLED, Sensors, RTC) to the XIAO SDA (GPIO 5) and SCL (GPIO 6) pins.
-
-Soil Moisture Sensor: Connect the SIG pin from the DFRobot Capacitive Soil Moisture sensor to XIAO A2 (GPIO 3). Connect the red wire to 3V3 and the black wire to GND.
-
-Pump/MOSFET Driver: Connect the Seeed Grove MOSFET/Pump driver SIG pin to D10 (GPIO 9).
-
-WiFi Credentials:
-
-Create a file named secrets.h inside the include directory of your project.
-
-Add the following lines with your network info:
-```C++
-#define WIFI_SSID "Your_Network_Name"
-#define WIFI_PASS "Your_Password"
-```
-Step 4: Build and Deploy
-Connect: Plug your XIAO ESP32-S3 into your computer via USB-C.
-
-Build: Click the Checkmark icon in the VS Code bottom status bar. PlatformIO will automatically download all dependencies.
-
-Upload: Click the Right Arrow icon to flash the code to the board.
-
-Monitor: Click the Plug icon (Serial Monitor) to open the output. The system will sync with NTP on boot and begin monitoring.
-
-1.  **Hardware Wiring:** Connect all I2C devices (OLED, Sensors, Encoder) to the XIAO ESP32-S3 **SDA (GPIO 5)** and **SCL (GPIO 6)** pins.
-    * Connect the `SIG pin` from the DFRobot Capacitive Soil Moisture sensor to XIAO ESP32-S3 `A2 (GPIO 3) pin` and connect the red wire to the `3v3 pin` and the black wire to the `GND` pin.
-    * Connect the Seeed Grove MOSFET/Pump driver `SIG pin` to `D10 (GPIO 9) pin`.
-2.  **Environment:** Ensure the PlatformIO extension is installed in VS Code.
-3.  **Dependencies:** 
-4.  **Configuration:** Create a `secrets.h` file in the `include` directory to define your `WIFI_SSID` and `WIFI_PASS`.
-5.  **Deployment:** Build and upload the project via PlatformIO. The system will sync with NTP on boot and begin monitoring. -->
-
 ## Environment Setup & Installation
 
 This guide explains how to set up the development environment and deploy the Smart Plant Care system to a Seeed Studio XIAO ESP32-S3 using PlatformIO.
@@ -224,18 +143,6 @@ Add your Wi-Fi credentials:
 ```
 Keeping credentials in this file prevents them from being committed to version control.
 
-### 4. Wi-Fi Configuration
-Create a file named:
-```txt
-include/secrets.h
-```
-Add your Wi-Fi credentials:
-```c++
-#define WIFI_SSID "Your_Network_Name"
-#define WIFI_PASS "Your_Password"
-```
-Keeping credentials in this file prevents them from being committed to version control.
-
 ### 5. Build & Upload Firmware
 
 #### Connect the Board
@@ -292,9 +199,6 @@ Click the **plug icon** to open the **Serial Monitor**.
 * **WiFi Manager:** Replace hardcoded credentials with an Access Point (AP) mode for dynamic configuration.
 * **Historical Logging:** Log sensor data over time to an SD card for long-term trend analysis.
 
-### AI Disclosure
----
-## AI Disclosure
----
 
+## AI Disclosure
 AI tools were used only for assistance with development environment setup (PlatformIO) and general hardware troubleshooting guidance. All firmware implementation, application logic, and project source code were written by me.
