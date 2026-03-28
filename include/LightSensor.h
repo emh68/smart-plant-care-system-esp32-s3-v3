@@ -1,4 +1,4 @@
-#ifndef LIGTH_SENSOR_H
+#ifndef LIGHT_SENSOR_H
 #define LIGHT_SENSOR_H
 
 #include <Adafruit_AS7341.h>
@@ -9,6 +9,7 @@ class LightSensor
 private:
     Adafruit_AS7341 _as7341;
     uint16_t _readings[10];
+    as7341_gain_t _currentGain;
     const uint8_t _spectrumChannels[8] = {
         AS7341_CHANNEL_415nm_F1, AS7341_CHANNEL_445nm_F2,
         AS7341_CHANNEL_480nm_F3, AS7341_CHANNEL_515nm_F4,

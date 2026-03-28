@@ -7,14 +7,14 @@ class TempHumSensor
 {
 private:
     SHT35 _sht35;
-    // Caching temp + hum for efficiency
+    // Temperature & Humidity are separated (sensor reads them as one)
     float _currentTemp; // Stored in Fahrenheit
     float _currentHum;  // Stored in % Relative Humidity
 
 public:
     TempHumSensor(int pinNum);
     bool init();
-    void update(); // Retrieve new data from sensor (update cache)
+    void update();
     float getTemp();
     float getHum();
 };

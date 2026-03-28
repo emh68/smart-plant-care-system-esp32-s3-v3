@@ -1,7 +1,8 @@
 #ifndef DISPLAY_MANAGER_H
 #define DISPLAY_MANAGER_H
 
-#include <U8g2lib.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_ST7789.h>
 
 enum Screen
 {
@@ -13,17 +14,22 @@ enum Screen
 class DisplayManager
 {
 private:
-    U8G2_SSD1315_128X64_NONAME_F_HW_I2C &_u8g2;
+    Adafruit_ST7789 *_tft;
     Screen _currentScreen;
 
 public:
-    DisplayManager(U8G2_SSD1315_128X64_NONAME_F_HW_I2C &u8g2) : _u8g2(u8g2), _currentScreen(HOME) {}
+    DisplayManager(Adafruit_ST7789 *tft) : _tft(tft), _currentScreen(HOME) {}
     void setScreen(Screen s) { _currentScreen = s; }
     void nextScreen();
+    // Functions to render different screens
     void renderHome(float temp, float hum, String date, String time);
-    void renderLight(const char **labels, int *values);
+    void renderLight(const char **labels, uint16_t *values);
     void renderWatering(String name, int percent, int raw);
     void renderMenu(const char **options, int count, int selected);
+    void renderTextInput(String title, String currentInput, char activeChar);
+    void renderCalibration(String instruction, int countdown, int currentRaw);
+
+    void clearScreen() { _tft->fillScreen(ST77XX_BLACK); }
 };
 
 #endif

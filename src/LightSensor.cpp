@@ -4,14 +4,16 @@ bool LightSensor::begin()
 {
     if (!_as7341.begin())
         return false;
+    // Set light sensor gain and timing for readings
+    _as7341.setGain(AS7341_GAIN_128X);
     _as7341.setATIME(100);
     _as7341.setASTEP(999);
-    _as7341.setGain(AS7341_GAIN_256X);
     return true;
 }
 
 void LightSensor::update()
 {
+    // Read all color channels at the same time
     if (_as7341.readAllChannels())
     {
         for (int i = 0; i < 8; i++)
