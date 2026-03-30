@@ -12,6 +12,8 @@ bool SystemTime::syncNTP()
     if (!clientStarted)
     {
         _timeClient.begin();
+        // to offset
+        _timeClient.setTimeOffset(_offset);
         clientStarted = true;
     }
     if (_timeClient.update())

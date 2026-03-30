@@ -34,6 +34,9 @@ public:
     void begin();                             // Load saved values from memory
     void saveCalibration(int dry, int water); // Save calibration values for power loss
     void setThresholds(int trigger, int target);
+    String getPlantName() { return _plantName; }
+    int getCurrentRaw() { return _currentRaw; }
+    int getTarget() { return _targetPercent; }
     int getTrigger() { return _triggerPercent; }
 
     void update();

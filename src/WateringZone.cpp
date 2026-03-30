@@ -14,14 +14,16 @@ void WateringZone::begin()
     // Match ESP32-S3 to the 10-bit resolution from the manufacturer
     analogReadResolution(10);
 
-    // Load saved settings from ESP32 memory
+    // Load saved settings from ESP32 memory using a unique namespace for this zone
     String folder = "zone" + String(_id);
-    _prefs.begin(folder.c_str(), false);
+    _prefs.begin(folder.c_str(), false); // 'false' means read/write mode
     _plantName = _prefs.getString("name", "Plant " + String(_id + 1));
     _dryValue = _prefs.getInt("dry", 700);
     _waterValue = _prefs.getInt("water", 330);
     _prefs.end();
 
+    // Null-check to ensure pump starts in the OFF state to prevent accidental watering on boot
+    // since MCP23017 is shared and must be attached
     pinMode(_sensorPin, INPUT);
     if (_mcp != nullptr)
     {
@@ -37,7 +39,8 @@ void WateringZone::update()
 
 int WateringZone::getMoisturePercent()
 {
-    // Map inverted values: High (700) is air/dry 0%, Low (330) is submerged in water 100%
+    // Map inverted values: High (700) is dry 0%, Low (330) is wet/water 100%
+    // Constrain ensures return is never negative % or >100% if sensor drifts
     int moisturePercent = map(_currentRaw, _dryValue, _waterValue, 0, 100);
     return constrain(moisturePercent, 0, 100);
 }
@@ -57,6 +60,7 @@ void WateringZone::saveCalibration(int dry, int water)
 
 void WateringZone::attachMCP(Adafruit_MCP23X17 *mcp)
 {
+    // Stores address of MCP23017 (Solenoid Driver & I2C Port Expander) for pump control
     _mcp = mcp;
     Serial.println("MCP attached to zone");
 }
@@ -89,4 +93,10 @@ void WateringZone::rename(String newName)
     _prefs.begin(folder.c_str(), false);
     _prefs.putString("name", _plantName);
     _prefs.end();
+}
+
+void WateringZone::setThresholds(int trigger, int target)
+{
+    _triggerPercent = trigger;
+    _targetPercent = target;
 }

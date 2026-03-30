@@ -24,11 +24,23 @@ void DisplayManager::renderMenu(const char **options, int count, int selected)
     _tft->fillScreen(ST77XX_BLUE);
     _tft->setTextSize(2);
 
-    for (int i = 0; i < count; i++)
+    int maxVisible = 5; // Max number of items that fit on screen
+    int startItem = 0;
+
+    // Scrolling Logic: If selected item moves off the bottom of the
+    // screen, shift the "window" down so the selected item is at the bottom.
+    if (selected >= maxVisible)
     {
-        int y = 20 + i * 40;
+        startItem = selected - (maxVisible - 1);
+    }
+
+    for (int i = 0; i < maxVisible && (startItem + i) < count; i++)
+    {
+        int currentIndex = startItem + i;
+        int y = 20 + i * 40; // spacing
+
         _tft->setCursor(10, y);
-        if (i == selected)
+        if (currentIndex == selected)
         {
             _tft->setTextColor(ST77XX_YELLOW);
             _tft->print("> ");
@@ -38,7 +50,7 @@ void DisplayManager::renderMenu(const char **options, int count, int selected)
             _tft->setTextColor(ST77XX_WHITE);
             _tft->print("  ");
         }
-        _tft->print(options[i]);
+        _tft->print(options[currentIndex]);
     }
 }
 
@@ -58,7 +70,7 @@ void DisplayManager::renderWatering(String name, int percent, int raw)
     _tft->setCursor(10, 90);
     _tft->print("Raw: " + String(raw));
 
-    // Draw moisture bar
+    // Draw soil moisture bar
     int barWidth = map(percent, 0, 100, 0, 200);
     _tft->fillRect(10, 110, barWidth, 20, ST77XX_BLUE);
     _tft->drawRect(10, 110, 200, 20, ST77XX_WHITE);
@@ -72,7 +84,7 @@ void DisplayManager::renderLight(const char **labels, uint16_t *values)
     _tft->setCursor(10, 0);
     _tft->print("Light Spectrum");
 
-    // Define RGB565 Colors for the 10 channels
+    // Define RGB565 Colors (5-bits Red, 6-bits Green, 5-bits Blue) for the 10 channels
     uint16_t channelColors[] = {
         0x701D, // F1 415nm (Purple/Violet)
         0x015F, // F2 445nm (Deep Blue)
@@ -88,13 +100,13 @@ void DisplayManager::renderLight(const char **labels, uint16_t *values)
 
     // X Axis labels (light wavelengths)
     const char *shortLabels[] = {"415", "445", "480", "515", "555", "590", "630", "680", "CLR", "NIR"};
-    // Bar graph setup/format
+
     for (int i = 0; i < 10; i++)
     {
         // Map light level raw values 0-65535 to 180 pixels height
         int barHeight = map(values[i], 0, 65535, 0, 180);
 
-        int xPos = 5 + (i * 31);
+        int xPos = 5 + (i * 31); // Bar column width 31px
         _tft->fillRect(xPos, 215 - barHeight, 22, barHeight, channelColors[i]);
         _tft->drawRect(xPos, 215 - 180, 22, 180, 0x4208);
 
@@ -148,4 +160,57 @@ void DisplayManager::renderCalibration(String instruction, int countdown, int cu
     _tft->setTextColor(ST77XX_GREEN);
     _tft->setCursor(10, 200);
     _tft->print("Current Raw: " + String(currentRaw));
+}
+
+void DisplayManager::renderPlantProfile(
+    String plantName,
+    int moistureMin,
+    int moistureMax,
+    int humidityMin,
+    int humidityMax,
+    int tempMin,
+    int tempMax,
+    float soilPHMin,
+    float soilPHMax,
+    String lightNeeds,
+    int wateringFrequencyDays)
+{
+    _tft->fillScreen(ST77XX_BLACK);
+    _tft->setTextColor(ST77XX_WHITE);
+    _tft->setCursor(0, 0);
+
+    _tft->println("Plant Profile");
+    _tft->println("----------------");
+    _tft->println(plantName);
+    _tft->println("");
+
+    _tft->print("Moisture: ");
+    _tft->print(moistureMin);
+    _tft->print("-");
+    _tft->println(moistureMax);
+
+    _tft->print("Humidity: ");
+    _tft->print(humidityMin);
+    _tft->print("-");
+    _tft->println(humidityMax);
+
+    _tft->print("Temp: ");
+    _tft->print(tempMin);
+    _tft->print("-");
+    _tft->println(tempMax);
+
+    _tft->print("Soil pH: ");
+    _tft->print(soilPHMin, 1);
+    _tft->print("-");
+    _tft->println(soilPHMax, 1);
+
+    _tft->print("Light: ");
+    _tft->println(lightNeeds);
+
+    _tft->print("Water every: ");
+    _tft->print(wateringFrequencyDays);
+    _tft->println(" days");
+
+    _tft->println("");
+    _tft->println("Press button to go back");
 }

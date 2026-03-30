@@ -1,34 +1,88 @@
 # Overview
 
-This project refactors a basic Arduino watering setup into a professional, object-oriented system using C++ and PlatformIO. By moving from procedural scripts to custom classes, I developed a scalable framework for managing asynchronous sensor data and complex UI states.
+As a software engineer, I am focused on evolving this project from a local hardware controller into a connected IoT (Internet of Things) ecosystem. This sprint was dedicated to integrating a cloud-based back-end to manage complex plant data and historical logging, moving beyond the memory limitations of a standalone microcontroller.
 
-The system monitors 10-channel spectral light, soil moisture, and environmental data. It features an interactive OLED menu driven by a Finite State Machine (FSM) and an I2C rotary encoder. Key technical implementations include non-volatile memory (NVS) for persistent calibration and manual hardware overrides.
+The software is a real-time plant monitoring and automated watering system. It synchronizes with a Firebase Realtime Database to pull specific care profiles (moisture, temperature, and humidity thresholds) for 13 different plant species. It provides an interactive UI on a high-resolution TFT display, allowing users to select profiles, monitor live spectral light data, and manage cloud logs.
 
-[Software Demo Video](https://youtu.be/OUlXXAMPLh4)
+The purpose of this software is to demonstrate the bridge between embedded C++ and cloud infrastructure. By offloading plant care requirements to a database, the system becomes dynamic—allowing for remote updates to plant care logic without requiring a firmware re-flash.
+
+[Software Demo Video](placeholder)
+
+
+## Cloud Database
+* `/plantLibrary` A collection of objects where each key is a unique plant ID (e.g., fiddle-leaf-fig). Each object contains integer and string values for moisture, temperature, humidity, and light requirements.
+
+* `/plantIndex` A lightweight array of all available plant IDs, used to efficiently populate the device's selection menu.
+
+* `/sensorData` A write-only node where the ESP32 creates new entries every 30 seconds, logging timestamps, soil moisture, environmental metrics, and pump activation status.
+
+### Firebase Data Snippet
+```json
+{
+  "plantIndex": [
+    "aloe-vera",
+    "basil",
+    "fiddle-leaf-fig"
+  ],
+  "plantLibrary": {
+    "aloe-vera": {
+      "humidityMax": 50,
+      "lightNeeds": "Full sun to bright light",
+      "moistureMin": 15,
+      "plantName": "Aloe Vera",
+      "soilPhMax": 7.5,
+      "tempMax": 80,
+      "wateringFrequencyDays": 14
+    },
+    "fiddle-leaf-fig": {
+      "humidityMax": 65,
+      "lightNeeds": "Bright, filtered light",
+      "moistureMin": 35,
+      "plantName": "Fiddle Leaf Fig",
+      "soilPhMax": 7,
+      "tempMax": 85,
+      "wateringFrequencyDays": 7
+    }
+  },
+  "sensorData": {
+    "-OKjL2xYz...": {
+      "plantId": "fiddle-leaf-fig",
+      "plantName": "Fiddle Leaf Fig",
+      "soilMoisture": 42,
+      "timestamp": "03/28/2026 10:45 PM",
+      "pumpActivated": false
+    }
+  }
+}
+```
 
 ## Development Environment
 
+### Required Hardware
+* **Microcontroller:** Seeed Studio XIAO ESP32-S3.
+* **Sensors:** <br>SHT35 (Temp/Hum)<br>AS7341 (10-Channel Spectral)<br>DFRobot Capacitive Soil Moisture (SEN0193).
+* **Solenoid Driver:** Adafruit MCP23017 GPIO Expander & solenoid driver 
+* **Pump:** 3v DC Submersible Water Pump.
+* **Display:** Adafruit 2.0" TFT IPS 240 x 320 ST7789 Display
+* **18 Pin EYE SPI Breakout Board:** Used to connect the display to SPI on microcontroller
+* **Input/Rotary Encoder:** U135 M5Stack Rotary Encoder Unit.
 * **IDE:** Visual Studio Code with PlatformIO extension.
-* **Hardware:** Seeed Studio XIAO ESP32-S3 Microcontroller.
 * **Communication Protocol:** I2C (Inter-Integrated Circuit) for sensor bus and encoder.
 
 ### Programming Language and Libraries
 * **Language:** C++ (Arduino Framework).
 * **Libraries:** 
-    * `U8g2lib.h` (OLED rendering)
+    * `Adafruit_ST7789.h` (2.0" TFT IPS Display driver)
+    * `Adafruit_GFX` (Graphics library)
     * `Wire.h` (I2C communication)
     * `Preferences.h` (Flash memory/File I/O stretch goal)
     * `NTPClient.h` & `WiFi.h` (Network time synchronization)
     * `Seeed_SHT35.h` (Environmental sensing)
     * `Adafruit_AS7341.h` (Spectral Analysis)
     * `Grove_Moisture_Sensor.h` (DFRobot/Grove Moisture Logic)
-    * `Grove_MOSFET.h` (Pump driver control)
-
-### Required Hardware
-* **Microcontroller:** Seeed Studio XIAO ESP32-S3.
-* **Sensors:** SHT35 (Temp/Hum), AS7341 (10-Channel Spectral), DFRobot Capacitive Soil Moisture (SEN0193).
-* **Actuators:** Seeed Grove MOSFET & DC Water Pump.
-* **Display/Input:** SSD1315 OLED (128x64), M5Stack Unit Encoder.
+    * `Adafruit_MCP23X17.h` (MCP23017 GPIO Expander & 8 Channel Solenoid Driver)
+    * `Firebase_ESP_Client.h` (Firebase Realtime Database)
+    * `Adafruit_ADS1X15.h` (Not used in this version. In future version allows multiple soil moisture sensors for multiple plants)
 
 ## Environment Setup & Installation
 
@@ -71,16 +125,26 @@ board = seeed_xiao_esp32s3
 framework = arduino
 monitor_speed = 115200
 
-build_flags =
+build_flags = 
     -D ARDUINO_USB_MODE=1
     -D ARDUINO_USB_CDC_ON_BOOT=1
 
-lib_deps =
+monitor_dtr = 0
+monitor_rts = 0
+
+
+lib_deps = 
     https://github.com/Seeed-Studio/Grove_High_Precision_RTC_PCF85063TP.git
     https://github.com/Seeed-Studio/Seeed_SHT35.git
-    olikraus/U8g2 @ ^2.35.9
     arduino-libraries/NTPClient @ ^3.2.1
     adafruit/Adafruit AS7341 @ ^1.4.1
+    adafruit/Adafruit BusIO @ ^1.16.1
+    adafruit/Adafruit ADS1X15 @ ^2.6.2
+    https://github.com/adafruit/Adafruit-MCP23017-Arduino-Library.git
+    adafruit/Adafruit GFX Library @ ^1.12.5
+    https://github.com/adafruit/Adafruit-ST7735-Library.git
+    mobizt/Firebase Arduino Client Library for ESP8266 and ESP32 @ ^4.4.14
+
 ```
 ### 3. Hardware Wiring
 
@@ -88,7 +152,7 @@ lib_deps =
 
 Connect the system components to the **XIAO ESP32-S3** as described below.
 
-#### I2C Devices
+### I2C Devices
 
 All I2C devices share the same bus.
 
@@ -98,38 +162,38 @@ All I2C devices share the same bus.
 | SCL | GPIO 6 |
 
 Connect the following devices to the I2C bus:
-
-- OLED display  
+  
 - SHT35 temperature and humidity sensor  
 - PCF85063TP RTC  
 - Any additional I2C sensors
 
 ---
 
-#### Soil Moisture Sensor
+### Adafruit 2.0" TFT (ST7789) SPI Pinout
+
+| EYESPI / TFT Pin | XIAO ESP32-S3 Pin | Function | Description |
+| :--- | :--- | :--- | :--- |
+| VIN | 3V3 | Power | 3.3V Power Supply |
+| GND | GND | Ground | Common Ground |
+| SCK | GPIO 7 (D8) | SCK | SPI Clock Line |
+| MOSI | GPIO 9 (D10)| MOSI | Master Out Slave In |
+| TCS | GPIO 2 (D1) | TFT_CS | Chip Select |
+| DC | GPIO 3 (D2) | TFT_DC | Data/Command Toggle |
+| RST | GPIO 4 (D3) | TFT_RST | Hardware Reset |
+
+
+### Soil Moisture Sensor
 
 DFRobot Capacitive Soil Moisture Sensor
 >*Note:* This sensor must use an analog pin on the microcontroller (A1, A2, etc.)
 
 | Sensor Pin | XIAO Pin |
 |-----------|-----------|
-| SIG | A2 (GPIO 3) |
+| SIG | D0 (GPIO 1) |
 | VCC | 3V3 |
 | GND | GND |
 
 ---
-
-#### Pump / MOSFET Driver
-
-Seeed Grove MOSFET or Pump Driver
-
-| Driver Pin | XIAO Pin |
-|-----------|-----------|
-| SIG | D10 (GPIO 9) |
-| VCC | 3V3 |
-| GND | GND |
-
-The **SIG pin** controls the watering pump (on/off).
 
 ### 4. Wi-Fi Configuration
 
@@ -180,30 +244,35 @@ Click the **plug icon** to open the **Serial Monitor**.
 * [Adafruit AS7341 10-Channel Light Sensor Wiki](https://learn.adafruit.com/adafruit-as7341-10-channel-light-color-sensor-breakout/arduino)
 * [DFRobot Capacitive Soil Moisture Sensor (SEN0193)](https://wiki.dfrobot.com/sen0193/)
 * [Seeed Studio SHT35 Temp/Hum Sensor](https://wiki.seeedstudio.com/Grove-I2C_High_Accuracy_Temp%2526Humi_Sensor-SHT35/)
-* [Seeed Studio Grove MOSFET (Pump Control)](https://wiki.seeedstudio.com/Grove-MOSFET/)
+* [Adafruit MCP23017 I2C to 8 Channel Solenoid Driver (Pump Control)](https://learn.adafruit.com/adafruit-i2c-to-8-channel-solenoid-driver/overview)
 * [Adafruit 3V DV Water Pump (submersible horizontal)](https://www.adafruit.com/product/4546)
 * [Grove DS1307 RTC (Real Time Clock)](https://wiki.seeedstudio.com/Grove-RTC/)
 * [DFRobot ProtoBoard - Rectangle 2" Single Sided](https://www.dfrobot.com/product-388.html?gad_source=1&gad_campaignid=23441887437&gbraid=0AAAAADucPlCHdn7-8BKVYNYW9_WjpTCbm&gclid=CjwKCAiAtq_NBhA_EiwA78nNWKz9YP4DaKY4bCC-SkvS-mBcr7qkboHzVxxd0d49X3hYWCc7OZP9hRoCycoQAvD_BwE)
 * [M5 Stack Grove to 4 Pin](https://shop.m5stack.com/products/connector-grove-to-4-pin-10pcs?srsltid=AfmBOoo6XyI0oYHN5GN71C4pX0s3Lb00qFoHPAAia5kM9i9gnUL140Nr)
-* [Seeed Studio Grove - OLED Display .96" (SSD1315)](https://wiki.seeedstudio.com/Grove-OLED-Display-0.96-SSD1315/)
+* [Adafruit 2.0" 240 x 320 Color IPS TFT Display (ST7789 driver)](https://learn.adafruit.com/2-0-inch-320-x-240-color-ips-tft-display)
 
 
 ### Technical References & Source Code
+* [XIAO ESP32-S3 Series](https://wiki.seeedstudio.com/xiao_esp32s3_getting_started/)
 * [M5Unit-Encoder GitHub (Unit_Encoder.cpp)](https://github.com/m5stack/M5Unit-Encoder/blob/master/src/Unit_Encoder.cpp)
 * [M5Unit-Encoder GitHub (Unit_Encoder.h)](https://github.com/m5stack/M5Unit-Encoder/blob/master/src/Unit_Encoder.h)
 * [Adafruit_AS7341 GitHub Library](https://github.com/adafruit/Adafruit_AS7341)
 * [Seeed_SHT35 GitHub Library](https://github.com/Seeed-Studio/Seeed_SHT35/blob/master/Seeed_SHT35.h)
 * [Grove High Precision RTC (PCF85063TP)](https://github.com/Seeed-Studio/Grove_High_Precision_RTC_PCF85063TP.git)
-* [OLED Display .96" (SSD1315) - u8g2 Library & Docs](https://github.com/olikraus/u8g2?tab=readme-ov-file)
+* [Adafruit 2.0" 240 x 320 Color IPS TFT Display ST7789 (It is for ST7735 & ST7789)](https://github.com/adafruit/Adafruit-ST7735-Library)
+* [Adafruit EYESPI Breakout Board](https://learn.adafruit.com/adafruit-eyespi-breakout-board/arduino)
+* [Mobitz Firebase-ESP-Client GitHub](https://github.com/mobizt/Firebase-ESP-Client)
+* [Firebase Realtime Database](https://firebase.google.com/docs/database)
 * [W3Schools C++ Tutorial](https://www.w3schools.com/cpp/default.asp)
 * [GeeksforGeeks C++ Programming](https://www.geeksforgeeks.org/cpp/c-plus-plus/)
 * *C++ For Everyone 2nd Edition* By Cay Horstmann.
 
 ## Future Work
-* **Dynamic Calibration:** Implement a UI-based calibration routine to set "Dry" and "Wet" points via the encoder.
-* **WiFi Manager:** Replace hardcoded credentials with an Access Point (AP) mode for dynamic configuration.
-* **Historical Logging:** Log sensor data over time to an SD card for long-term trend analysis.
+
+* **Migrate to FirebaseClient 1.2.0:** Transition to the newer, memory-efficient library to improve SSL handshake reliability and implement data streaming.
+* **Bi-Directional Control:** Implement a "Remote Manual Override" where a value changed in the Firebase console can trigger the water pump remotely.
+* **Improve UI:** Refactor the menu and display to support better user experience and viewing different watering zones for multi-plant management.
 
 
 ## AI Disclosure
-AI tools were used only for assistance with development environment setup (PlatformIO) and general hardware troubleshooting guidance. All firmware implementation, application logic, and project source code were written by me.
+AI tools were used only for assistance with development environment setup (PlatformIO) and general hardware troubleshooting/debugging guidance. All firmware implementation, application logic, and project source code were written by me.
