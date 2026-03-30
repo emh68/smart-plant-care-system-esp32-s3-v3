@@ -1,12 +1,10 @@
 # Overview
 
-As a software engineer, I am focused on evolving this project from a local hardware controller into a connected IoT (Internet of Things) ecosystem. This sprint was dedicated to integrating a cloud-based back-end to manage complex plant data and historical logging, moving beyond the memory limitations of a standalone microcontroller.
-
 The software is a real-time plant monitoring and automated watering system. It synchronizes with a Firebase Realtime Database to pull specific care profiles (moisture, temperature, and humidity thresholds) for 13 different plant species. It provides an interactive UI on a high-resolution TFT display, allowing users to select profiles, monitor live spectral light data, and manage cloud logs.
 
 The purpose of this software is to demonstrate the bridge between embedded C++ and cloud infrastructure. By offloading plant care requirements to a database, the system becomes dynamic—allowing for remote updates to plant care logic without requiring a firmware re-flash.
 
-[Software Demo Video](placeholder)
+[Software Demo Video](https://youtu.be/0QcPcp3lv9k)
 
 
 ## Cloud Database
